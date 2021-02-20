@@ -23,6 +23,6 @@ jobs:
         # The boot-clj version to make available on the path.
         boot: # optional
         # [DEPRECATED] The tools deps version to make available on the path.
-        tools-deps: # optional
+        tools-deps: 1.10.2
         # Clojure CLI version to make availablr on the path.
-        cli: # optional
+        cli: 1.10.2 ##optional
