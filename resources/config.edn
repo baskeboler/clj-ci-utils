@@ -1,0 +1,7 @@
+{:other-config {:foo :bar}
+ :logging      {:level     "info"
+                :console   true
+                :files     ["program.log"
+                            {:name    "program-json.log"
+                             :encoder "json"}]
+                :overrides {}}}
