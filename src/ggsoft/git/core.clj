@@ -9,31 +9,28 @@
             [ggsoft.git.repo :refer [default-git current-version]]
             [clojure.edn]
             [unilog.config :refer [start-logging!]]
-            [clojure.tools.logging :refer [log info debug error warn]])
-
-  (:import java.io.File
-           org.eclipse.jgit.api.Git
-           org.eclipse.jgit.lib.Ref
-           org.eclipse.jgit.lib.Repository
-           org.eclipse.jgit.storage.file.FileRepositoryBuilder))
+            [clojure.tools.logging :refer [log info debug error warn]]
+            [clojure.set :as sets])
+  (:import (java.io File)
+           (org.eclipse.jgit.api Git)
+           (org.eclipse.jgit.lib Ref Repository)
+           (org.eclipse.jgit.storage.file FileRepositoryBuilder)))
 
 (set! *warn-on-reflection* true)
 
 (declare set-git-dir)
 
 (def logging-conf
-  {:level     "all"
+  {:level     "info"
    :console   true
-   :files     ["program.log"
+   :files     [{:name "program.log"}
                {:name    "program-json.log"
                 :encoder "json"}]
-   :overrides {}})
-
+   :overrides {"ggsoft.git.core"            "all"
+               "ggsoft.git.commands.update" "all"}})
 
 (defn init-logging! []
   (start-logging! logging-conf))
-
-
 
 (defn valid-base-version-string? [v]
   (-> (re-matches #"\d+\.\d+\.\d+" v)
@@ -53,17 +50,6 @@
 (defn create-version-file []
   (spit ".VERSION" (current-version  (default-git))))
 
-(defn update-version-in-file
-  "replaces old version string with new one in
-   provided file"
-  [file-name old-version new-version]
-  (let [contents (slurp file-name)
-        updated (cstr/replace
-                 contents
-                 old-version
-                 new-version)]
-    (spit file-name updated)))
-
 (def cli-opts
   [["-p" "--port PORT" "Port number"
     :default 80
@@ -81,6 +67,15 @@
    ["-h" "--help"
     :id :help]])
 
+(def usage-str
+  ["Usage: ci-utils [OPTIONS] command"
+   "command may be one of:"
+   ""
+   "- current-version: "
+   "- registered version "
+   "- update-file: updates the file replacing recorded version with "
+   "  the current version and saving it as the new recorded version"])
+
 (defn- handle-errors [errs]
   (println "Error:")
   (doseq [e errs]
@@ -94,16 +89,73 @@
     "update"           :update
     :unknown-command))
 
+(defn validate-command-mandatory-opts
+  [command mandatory-opts]
+  (fn [cmd opt-map]
+    (if  (not (sets/subset?
+               (set mandatory-opts)
+               (into #{}
+                     (for [[k v] opt-map
+                           :when (some? v)]
+                       k))))
+      (let [opt-diff (sets/difference
+                      (set mandatory-opts)
+                      (into #{} (keys opt-map)))]
+        {:status :error
+         :message (str "Include following options: " (cstr/join ", " (map str opt-diff)))})
+      {:status :ok})))
+
+(def mandatory-options-by-command
+  {:recorded-version nil
+   :current-version  nil
+   :update           #{:file}
+   :bump-version-tag nil})
+
+(def validator-by-command
+  (->>
+   (doall
+    (for [[cmd mandatories] mandatory-options-by-command
+          :when (some? mandatories)]
+      [cmd (validate-command-mandatory-opts cmd mandatories)]))
+   (into {})))
+
+(defn- ok [& args]
+  {:status :ok})
+
+(defn- validate-command
+  [command opts]
+  (let [v (get validator-by-command command ok)]
+    (v command opts)))
+
+#_(reduce
+   (fn [res v]
+     (cond
+       (= :error (:status res))
+       res
+
+       :otherwise))
+   {:status :ok}
+   validator-by-command)
+
 (defn handle-parse-result [res]
-  (let [{:keys [arguments errors]} res
-        command                                    (resolve-command (first arguments))
-        status                                     (if (or (= command :unknown-command)
-                                                           (some? errors))
-                                                     :error
-                                                     :ok)]
+  (let [{:keys [arguments
+                errors
+                options]} res
+        command           (resolve-command (first arguments))
+        status            (if (or (= command :unknown-command)
+                                  (some? errors))
+                            :error
+                            :ok)
+        wrap-result       (fn [r]
+                            (if (= (:status r) :error)
+                              r
+                              (merge
+                               r
+                               (validate-command command options))))]
     (-> res
         (assoc :command command
-               :status status))))
+               :status status)
+        (wrap-result))))
 
 (defn -main [& args]
   (init-logging!)
@@ -113,9 +165,11 @@
             handle-parse-result)]
     (fipp res)
     (cond
-      (some? errors)                     (handle-errors errors)
-      (some-> options :help some?)       (do
-                                           (info "usage: " (first args) " [opts] command")
-                                           (info summary))
-      (= :ok (-> res :logging :status)) (do
-                                          (info "performing command " res)))))
+      (some? errors)               (handle-errors errors)
+      (some-> options :help some?) (do
+                                     (println "usage: " (first args) " [opts] command")
+                                     (println summary))
+      (= :ok (-> res :status))     (do
+                                     (info "performing command " res)
+                                     (println
+                                      (perform-command res))))))
