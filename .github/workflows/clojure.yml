@@ -10,8 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout
-      uses: actions/checkout@latest
+    - uses: actions/checkout@latest
         # The JDK version to make available on the path. Required to run any clojure command line tools.
         # You can use any package that providing any JDK here, eg. `actions/setup-java@v1`
         # or you can use mine package to provision graalvm on hosted environment.
