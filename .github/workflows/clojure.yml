@@ -32,6 +32,9 @@ jobs:
     - run: clojure -Sdescribe
     - run: clojure -Sdeps "{:deps {seancorfield/depstar {:mvn/version \"1.1.136\"}}}" -M:depstar -m hf.depstar.uberjar -C -m ggsoft.git.core  clj-ci-utils.jar
 
+    - run: native-image -jar clj-ci-utils.jar --no-fallback -H:+ReportExceptionStackTraces --report-unsupported-elements-at-runtime --initialize-at-build-time --allow-incomplete-classpath
     - uses: actions/upload-artifact@v2
       with:
-        path: clj-ci-utils.jar
+        path: |
+          clj-ci-utils.jar
+          clj-ci-utils
