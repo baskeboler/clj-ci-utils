@@ -1,8 +1,20 @@
 {:paths ["src" "resources"]
  :deps
- {org.eclipse.jgit/org.eclipse.jgit {:mvn/version "5.10.0.202012080955-r"}
+ {org.clojure/clojure               {:mvn/version "1.10.2"}
+  org.eclipse.jgit/org.eclipse.jgit {:mvn/version "5.10.0.202012080955-r"}
   juxt/crux-core                    {:mvn/version "21.01-1.14.0-beta"}
   org.clojure/tools.cli             {:mvn/version "1.0.194"}
   fipp/fipp                         {:mvn/version "0.6.23"}
-  spootnik/unilog                   {:mvn/version "0.7.27"}}}
+  spootnik/unilog                   {:mvn/version "0.7.27"}}
+ :aliases
+ {;; Uberjar archive of the project, including Clojure runtime
+  ;; clojure -X:project/uberjar :main-class domain.application
+  ;; clojure -X:project/uberjar :jar '"project-name.jar"' :main-class domain.application
+  :project/uberjar
+  {:extra-deps {seancorfield/depstar {:mvn/version "1.1.136"}}
+   :exec-fn    hf.depstar/uberjar
+   :exec-args  {:jar        "uber.jar"
+                :aot        true
+                :main-class project.core}}}}
+
   

@@ -35,3 +35,4 @@ jobs:
     - run: clojure -Sdescribe
     - run: lein -v
     - run: boot -V      
+    - run: clojure -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
