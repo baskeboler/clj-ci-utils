@@ -26,7 +26,7 @@ jobs:
       # You may pin to the exact commit or the version.
       # uses: DeLaGuardo/setup-graalvm@b990167df27a6253bcd645d6b0eed91d4c795b38
       uses: DeLaGuardo/setup-graalvm@3.1
-      # with:
+      with:
         # The GraalVM version to make available on the path.
-         # graalvm-version: 
+        graalvm-version: '21.0.0.java11'
       
