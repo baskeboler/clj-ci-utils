@@ -28,9 +28,6 @@ jobs:
                 # leiningen and boot-cli can be installed as well
        lein: 2.9.4
                 # For leiningen and boot you could use 'latest' version
-       boot: latest
-                # desired executables will be available
-                # Please install separatelly rlwrap
                 # if you are planning to use `clj` instead of `clojure` as a CLI runner
     - run: clojure -Sdescribe
     - run: lein -v
