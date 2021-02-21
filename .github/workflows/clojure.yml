@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Setup Clojure
       # You may pin to the exact commit or the version.
@@ -21,7 +19,8 @@ jobs:
         tools-deps: 1.10.2
         # Clojure CLI version to make availablr on the path.
         cli: 1.10.2 ##optional
-
+      run: clojure -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
+      
     - name: Setup GraalVM environment
       # You may pin to the exact commit or the version.
       # uses: DeLaGuardo/setup-graalvm@b990167df27a6253bcd645d6b0eed91d4c795b38
@@ -29,6 +28,4 @@ jobs:
       with:
         # The GraalVM version to make available on the path.
         graalvm-version: '21.0.0.java11'
-    - name: compile
-      run: clj -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
       
