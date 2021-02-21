@@ -32,4 +32,5 @@ jobs:
                 # For leiningen and boot you could use 'latest' version
                 # if you are planning to use `clj` instead of `clojure` as a CLI runner
     - run: clojure -Sdescribe
-    - run: clojure -X":project/uberjar" hf.depstar/uberjar :main-class ggsoft.git.core :jar "'git.jar'" :sync-pom false :aot true
+    - run: clojure -Sdeps "{:deps {seancorfield/depstar {:mvn/version \"1.1.136\"}}}" -X hf.depstar/uberjar -Sverbose -- :main-class ggsoft.git.core :jar "'git.jar'" :sync-pom false :aot true
+
