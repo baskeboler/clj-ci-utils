@@ -3,13 +3,13 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as cstr]
-            [fipp.edn :refer [pprint] :rename {pprint fipp}]
+            [fipp.edn :as f :refer [pprint] :rename {pprint fipp}]
             [ggsoft.git.commands.core :refer :all]
             [ggsoft.git.commands.multi :refer [perform-command]]
             [ggsoft.git.repo :refer [default-git current-version]]
             [clojure.edn]
             [unilog.config :refer [start-logging!]]
-            [clojure.tools.logging :refer [log info debug error warn]]
+            [clojure.tools.logging :refer [log trace info debug error warn]]
             [clojure.set :as sets])
   (:import (java.io File)
            (org.eclipse.jgit.api Git)
@@ -23,11 +23,12 @@
 (def logging-conf
   {:level     "info"
    :console   true
+   :file "program.log"
    :files     [{:name "program.log"}
                {:name    "program-json.log"
                 :encoder "json"}]
-   :overrides {"ggsoft.git.core"            "all"
-               "ggsoft.git.commands.update" "all"}})
+   :overrides {"ggsoft.git.core"            "debug"
+               "ggsoft.git.repo" "debug"}})
 
 (defn init-logging! []
   (start-logging! logging-conf))
@@ -87,6 +88,7 @@
     "current-version"  :current-version
     "bump-version-tag" :bump-version-tag
     "update"           :update
+    "write-properties" :write-properties
     :unknown-command))
 
 (defn validate-command-mandatory-opts
@@ -108,6 +110,7 @@
 (def mandatory-options-by-command
   {:recorded-version nil
    :current-version  nil
+   :write-properties #{:file}
    :update           #{:file}
    :bump-version-tag nil})
 
@@ -163,7 +166,7 @@
         (-> args
             (parse-opts cli-opts)
             handle-parse-result)]
-    (fipp res)
+    (trace res)
     (cond
       (some? errors)               (handle-errors errors)
       (some-> options :help some?) (do

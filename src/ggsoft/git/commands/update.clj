@@ -15,7 +15,7 @@
                  old-version
                  new-version)]
     (spit file-name updated)
-    (spit ".VERSION" updated)))
+    (spit ".VERSION" new-version)))
 
 (defmethod perform-command :update
   [{:keys [options] :as arg}]
@@ -23,4 +23,5 @@
   (let [{:keys [file] } options
         current         (grepo/current-version (grepo/default-git))
         recorded        (recorded-version)]
+    (info "replacing " recorded  " with " current " in file " file) 
     (update-version-in-file file recorded current)))

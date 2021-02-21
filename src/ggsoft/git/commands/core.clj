@@ -2,6 +2,7 @@
   (:require [ggsoft.git.commands.update]
             [ggsoft.git.commands.current-version]
             [ggsoft.git.commands.recorded-version]
-            [ggsoft.git.commands.multi]))
+            [ggsoft.git.commands.multi]
+            [ggsoft.git.commands.write-properties]))
 
 
