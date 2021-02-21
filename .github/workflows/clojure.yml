@@ -29,4 +29,6 @@ jobs:
       with:
         # The GraalVM version to make available on the path.
         graalvm-version: '21.0.0.java11'
+    - name: compile
+      run: clojure -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
       
