@@ -14,19 +14,21 @@ jobs:
         # The JDK version to make available on the path. Required to run any clojure command line tools.
         # You can use any package that providing any JDK here, eg. `actions/setup-java@v1`
         # or you can use mine package to provision graalvm on hosted environment.
-
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 1.11
     - name: graal setup
       uses: DeLaGuardo/setup-graalvm@3.0
       with:
        graalvm-version: '19.3.1.java11'
-
+       
     - name: clojure setup
       uses: DeLaGuardo/setup-clojure@3.1
       with:
                 # To use Clojure CLI 1.10.1.561 based on tools.deps
-       cli: '1.10.2'
+        cli: '1.10.2'
                 # leiningen and boot-cli can be installed as well
-       lein: 2.9.4
+     #  lein: 2.9.4
                 # For leiningen and boot you could use 'latest' version
                 # if you are planning to use `clj` instead of `clojure` as a CLI runner
     - run: clojure -Sdescribe
