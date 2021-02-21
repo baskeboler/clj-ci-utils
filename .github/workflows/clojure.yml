@@ -27,10 +27,9 @@ jobs:
       with:
                 # To use Clojure CLI 1.10.1.561 based on tools.deps
         cli: '1.10.1.469'
-                # leiningen and boot-cli can be installed as well
-     #  lein: 2.9.4
-                # For leiningen and boot you could use 'latest' version
-                # if you are planning to use `clj` instead of `clojure` as a CLI runner
     - run: clojure -Sdescribe
     - run: clojure -Sdeps "{:deps {seancorfield/depstar {:mvn/version \"1.1.136\"}}}" -M:depstar -m hf.depstar.uberjar -C -m ggsoft.git.core  clj-ci-utils.jar
 
+    - uses: actions/upload-artifact@v2
+      with:
+        path: clj-ci-utils.jar
