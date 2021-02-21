@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
- 
     - name: Setup Clojure
       # You may pin to the exact commit or the version.
       # uses: DeLaGuardo/setup-clojure@91054c3b9dc15fdc6a2f45be47405d891e672ef0
@@ -25,10 +24,6 @@ jobs:
       # uses: DeLaGuardo/setup-graalvm@b990167df27a6253bcd645d6b0eed91d4c795b38
       uses: DeLaGuardo/setup-graalvm@3.1
       with:
-        # The GraalVM version to make available on the path.
-         graalvm-version: 
-        # The boot-clj version to make available on the path.
-        boot: # optional
         # [DEPRECATED] The tools deps version to make available on the path.
         tools-deps: 1.10.2
         # Clojure CLI version to make availablr on the path.
