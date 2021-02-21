@@ -19,7 +19,7 @@ jobs:
         tools-deps: 1.10.2
         # Clojure CLI version to make availablr on the path.
         cli: 1.10.2 ##optional
-      run: clojure -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
+    - run: clojure -X:project/uberjar :main-class ggsoft.git.core :jar git.jar :sync-pom false :aot true
       
     - name: Setup GraalVM environment
       # You may pin to the exact commit or the version.
