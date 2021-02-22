@@ -2,7 +2,7 @@
   (:require [ggsoft.git.commands.multi :refer [perform-command]]
             [ggsoft.git.commands.recorded-version :refer [recorded-version]]
             [ggsoft.git.repo :as grepo]
-            [clojure.tools.logging :refer [info error debug warn]]
+            ;; [clojure.tools.logging :refer [info error debug warn]]
             [clojure.string :as cstr])) 
 
 (defn update-version-in-file
@@ -19,9 +19,9 @@
 
 (defmethod perform-command :update
   [{:keys [options] :as arg}]
-  (info "running update")
+  (println "running update")
   (let [{:keys [file] } options
         current         (grepo/current-version (grepo/default-git))
         recorded        (recorded-version)]
-    (info "replacing " recorded  " with " current " in file " file) 
+    (println "replacing " recorded  " with " current " in file " file) 
     (update-version-in-file file recorded current)))

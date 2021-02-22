@@ -3,13 +3,13 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as cstr]
-            [fipp.edn :as f :refer [pprint] :rename {pprint fipp}]
+            ;; [fipp.edn :as f :refer [pprint] :rename {pprint fipp}]
             [ggsoft.git.commands.core :refer :all]
             [ggsoft.git.commands.multi :refer [perform-command]]
             [ggsoft.git.repo :refer [default-git current-version]]
             [clojure.edn]
-            [unilog.config :refer [start-logging!]]
-            [clojure.tools.logging :refer [log trace info debug error warn]]
+            ;; [unilog.config :refer [start-logging!]]
+            ;; [clojure.tools.logging :refer [log trace info debug error warn]]
             [clojure.set :as sets])
   (:import (java.io File)
            (org.eclipse.jgit.api Git)
@@ -30,8 +30,8 @@
    :overrides {"ggsoft.git.core"            "debug"
                "ggsoft.git.repo" "debug"}})
 
-(defn init-logging! []
-  (start-logging! logging-conf))
+;; (defn init-logging! []
+  ;; (start-logging! logging-conf))
 
 (defn valid-base-version-string? [v]
   (-> (re-matches #"\d+\.\d+\.\d+" v)
@@ -161,18 +161,17 @@
         (wrap-result))))
 
 (defn -main [& args]
-  (init-logging!)
+  ;; (init-logging!)
   (let [{:keys [options arguments summary errors] :as res}
         (-> args
             (parse-opts cli-opts)
             handle-parse-result)]
-    (trace res)
+    ;; (trace res)
     (cond
       (some? errors)               (handle-errors errors)
       (some-> options :help some?) (do
                                      (println "usage: " (first args) " [opts] command")
                                      (println summary))
       (= :ok (-> res :status))     (do
-                                     (info "performing command " res)
-                                     (println
-                                      (perform-command res))))))
+                                     ;; (trace "performing command " res)
+                                     (perform-command res)))))
