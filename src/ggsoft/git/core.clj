@@ -3,13 +3,11 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as cstr]
-            ;; [fipp.edn :as f :refer [pprint] :rename {pprint fipp}]
             [ggsoft.git.commands.core :refer :all]
             [ggsoft.git.commands.multi :refer [perform-command]]
             [ggsoft.git.repo :refer [default-git current-version]]
             [clojure.edn]
-            ;; [unilog.config :refer [start-logging!]]
-            ;; [clojure.tools.logging :refer [log trace info debug error warn]]
+            [clojure.data.json]
             [clojure.set :as sets])
   (:import (java.io File)
            (org.eclipse.jgit.api Git)
@@ -19,19 +17,6 @@
 (set! *warn-on-reflection* true)
 
 (declare set-git-dir)
-
-(def logging-conf
-  {:level     "info"
-   :console   true
-   :file "program.log"
-   :files     [{:name "program.log"}
-               {:name    "program-json.log"
-                :encoder "json"}]
-   :overrides {"ggsoft.git.core"            "debug"
-               "ggsoft.git.repo" "debug"}})
-
-;; (defn init-logging! []
-  ;; (start-logging! logging-conf))
 
 (defn valid-base-version-string? [v]
   (-> (re-matches #"\d+\.\d+\.\d+" v)
@@ -52,12 +37,16 @@
   (spit ".VERSION" (current-version  (default-git))))
 
 (def cli-opts
-  [["-p" "--port PORT" "Port number"
-    :default 80
-    :parse-fn #(Integer/parseInt %)
-    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+  [["-a" "--application-name APP_NAME" "Application Name"
+    :default "application"
+    :id :application-name]
+
    ["-f" "--file PATH" "Input file path"
     :default nil]
+   ["-o" "--output-format FORMAT" "Output format (json or edn)"
+    :default :edn
+    :parse-fn keyword
+    :validate [#{:json :edn} "invalid output format"]]
    ;; A non-idempotent option (:default is applied first)
    ["-v" nil "Verbosity level"
     :id :verbosity
@@ -102,15 +91,15 @@
                        k))))
       (let [opt-diff (sets/difference
                       (set mandatory-opts)
-                      (into #{} (keys opt-map)))]
-        {:status :error
-         :message (str "Include following options: " (cstr/join ", " (map str opt-diff)))})
+                      (into #{} (for  [[k v] opt-map :when (some? v)] k)))]
+        {:status  :error
+         :message (apply str "Include following options: " (cstr/join ", " (map str (vec opt-diff))))})
       {:status :ok})))
 
 (def mandatory-options-by-command
   {:recorded-version nil
    :current-version  nil
-   :write-properties #{:file}
+   :write-properties #{:file :application-name}
    :update           #{:file}
    :bump-version-tag nil})
 
@@ -166,12 +155,19 @@
         (-> args
             (parse-opts cli-opts)
             handle-parse-result)]
-    ;; (trace res)
+    (println res)
     (cond
-      (some? errors)               (handle-errors errors)
+      (some? errors)               (do
+                                     (handle-errors errors)
+                                     1)
       (some-> options :help some?) (do
                                      (println "usage: " (first args) " [opts] command")
-                                     (println summary))
+                                     (println summary)
+                                     0)
       (= :ok (-> res :status))     (do
                                      ;; (trace "performing command " res)
-                                     (perform-command res)))))
+                                     (perform-command res)
+                                     0)
+      :else                        (do
+                                     (println "failed.")
+                                     1))))
