@@ -1,15 +1,14 @@
 (ns ggsoft.git.core
   (:gen-class)
-  (:require [clojure.java.io :as io]
-            [clojure.tools.cli :refer [parse-opts]]
+  (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as cstr]
-            [ggsoft.git.commands.core :refer :all]
+            [ggsoft.git.commands.core]
             [ggsoft.git.commands.multi :refer [perform-command]]
             [ggsoft.git.repo :refer [default-git current-version]]
             [clojure.edn]
             [clojure.data.json]
             [clojure.set :as sets])
-  (:import (java.io File)
+  #_(:import (java.io File)
            (org.eclipse.jgit.api Git)
            (org.eclipse.jgit.lib Ref Repository)
            (org.eclipse.jgit.storage.file FileRepositoryBuilder)))
@@ -51,20 +50,24 @@
    ["-v" nil "Verbosity level"
     :id :verbosity
     :default 0
-    :update-fn inc] ; Prior to 0.4.1, you would have to use:
-   ;; :assoc-fn (fn [m k _] (update-in m [k] inc))
-   ;; A boolean option defaulting to nil
+    :update-fn inc]
+                                        
    ["-h" "--help"
     :id :help]])
 
 (def usage-str
-  ["Usage: ci-utils [OPTIONS] command"
+  [""
+   "Usage: ci-utils [OPTIONS] command"
    "command may be one of:"
    ""
    "- current-version: "
    "- registered version "
-   "- update-file: updates the file replacing recorded version with "
-   "  the current version and saving it as the new recorded version"])
+   "- update: updates the file replacing recorded version with "
+   "          the current version and saving it as the new recorded version"
+   "- write-properties: writes a properties file with the application name and"
+   "                    the current version"
+   "- get-versions: scans file for version strings"
+   ""])
 
 (defn- handle-errors [errs]
   (println "Error:")
@@ -78,6 +81,7 @@
     "bump-version-tag" :bump-version-tag
     "update"           :update
     "write-properties" :write-properties
+    "get-versions"     :get-versions
     :unknown-command))
 
 (defn validate-command-mandatory-opts
@@ -99,6 +103,7 @@
 (def mandatory-options-by-command
   {:recorded-version nil
    :current-version  nil
+   :get-versions     #{:file}
    :write-properties #{:file :application-name}
    :update           #{:file}
    :bump-version-tag nil})
@@ -118,16 +123,6 @@
   [command opts]
   (let [v (get validator-by-command command ok)]
     (v command opts)))
-
-#_(reduce
-   (fn [res v]
-     (cond
-       (= :error (:status res))
-       res
-
-       :otherwise))
-   {:status :ok}
-   validator-by-command)
 
 (defn handle-parse-result [res]
   (let [{:keys [arguments
@@ -155,17 +150,16 @@
         (-> args
             (parse-opts cli-opts)
             handle-parse-result)]
-    (println res)
+    ;; (println res)
     (cond
       (some? errors)               (do
                                      (handle-errors errors)
                                      1)
       (some-> options :help some?) (do
-                                     (println "usage: " (first args) " [opts] command")
+                                     (println (cstr/join \newline usage-str))
                                      (println summary)
                                      0)
       (= :ok (-> res :status))     (do
-                                     ;; (trace "performing command " res)
                                      (perform-command res)
                                      0)
       :else                        (do

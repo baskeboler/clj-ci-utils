@@ -31,7 +31,7 @@
         git-repo
         .isBare
         not)
-    (catch Exception e
+    (catch Exception _
       false)))
 
 (defn default-git

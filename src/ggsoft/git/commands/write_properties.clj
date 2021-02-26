@@ -14,9 +14,8 @@
 
 (defmethod perform-command :write-properties
   [arg]
-  (let [{:keys [options] } arg
+  (let [{:keys [options]} arg
         {:keys [file application-name output-format] :or {file "app.edn"}} options]
     (write-properties application-name file output-format)))
-    
-         
-         
+
+

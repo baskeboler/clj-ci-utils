@@ -1,8 +1,6 @@
 (ns ggsoft.git.commands.current-version
   (:require [ggsoft.git.commands.multi :refer [perform-command]]
-            [ggsoft.git.repo :refer [default-git current-version]])
-            ;; [clojure.tools.logging :refer [info]])
-  (:import [org.eclipse.jgit.api Git]))
+            [ggsoft.git.repo :refer [default-git current-version]]))
 
 
 

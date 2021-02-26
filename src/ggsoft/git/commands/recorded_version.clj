@@ -1,6 +1,5 @@
 (ns ggsoft.git.commands.recorded-version
-  (:require [ggsoft.git.commands.multi :refer [perform-command]]
-            [clojure.java.io :as io])
+  (:require [ggsoft.git.commands.multi :refer [perform-command]])
   (:import [java.io File]))
 
 
